@@ -3,13 +3,17 @@ package br.com.caelum.ingresso.model;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 
 @Entity
 public class Sessao {
@@ -22,8 +26,11 @@ public class Sessao {
 	private Sala sala;
 	@ManyToOne
 	private Filme filme;
-
+	
 	private BigDecimal preco;
+	
+	@OneToMany(mappedBy = "sessao", fetch = FetchType.EAGER)
+	private Set<Ingresso> ingressos = new HashSet<>();
 
 	/**
 	 * @deprecated hibernate only
@@ -36,6 +43,49 @@ public class Sessao {
 		this.filme = filme;
 		this.sala = sala;
 		this.preco = sala.getPreco().add(filme.getPreco());
+	}
+
+	public	boolean	isDisponivel(Lugar	lugarSelecionado)	{
+		return	ingressos.stream().map(Ingresso::getLugar).noneMatch(lugar	->	lugar.equals(lugarSelecionado));
+}
+	
+	
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((filme == null) ? 0 : filme.hashCode());
+		result = prime * result + ((horario == null) ? 0 : horario.hashCode());
+		result = prime * result + ((sala == null) ? 0 : sala.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Sessao other = (Sessao) obj;
+		if (filme == null) {
+			if (other.filme != null)
+				return false;
+		} else if (!filme.equals(other.filme))
+			return false;
+		if (horario == null) {
+			if (other.horario != null)
+				return false;
+		} else if (!horario.equals(other.horario))
+			return false;
+		if (sala == null) {
+			if (other.sala != null)
+				return false;
+		} else if (!sala.equals(other.sala))
+			return false;
+		return true;
 	}
 
 	public BigDecimal getPreco() {
@@ -84,6 +134,14 @@ public class Sessao {
 
 	public Map<String, List<Lugar>> getMapaDeLugares() {
 		return sala.getMapaDeLugares();
+	}
+	
+	public void setIngressos(Set<Ingresso> ingressos){
+		this.ingressos = ingressos;
+	}
+	
+	public Set<Ingresso> getIngressos(){
+		return ingressos;
 	}
 
 }
